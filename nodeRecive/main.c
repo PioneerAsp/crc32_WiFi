@@ -66,8 +66,8 @@ static esp_err_t init_wifi(void)
 
 void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
 {
-    /*////Convertimos uint8_t * -> str* para poder usar la funcion de StringToPackage
-    char *message = ( char *)data;
+    ////Convertimos uint8_t * -> str* para poder usar la funcion de StringToPackage
+    char *message = (  char *)data;
     
     //En la funcion recv_cb Recivo el string y lo convierto a paquete
     StringToPackage(pkgs1, message);
@@ -75,8 +75,8 @@ void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int d
     //Revisamos si llego correctamente
     if(checkCrc32(pkgs1->crc32, message)==1) ESP_LOGI(TAG, "ESP_NOW_RECIVED_SUCCESS");
     else ESP_LOGW(TAG, "ESP_NOW_RECIVED_FAIL");
-    ESP_LOGI(TAG, "Data received" MACSTR "%d", MAC2STR(esp_now_info->src_addr), pkgs1->data[3]);
-    */
+    ESP_LOGI(TAG, "Data received" MACSTR " %d", MAC2STR(esp_now_info->src_addr), pkgs1->data[3]);
+    
    ESP_LOGI(TAG, "Data received" MACSTR "%s", MAC2STR(esp_now_info->src_addr), data);
     
     
@@ -122,6 +122,9 @@ static esp_err_t esp_now_send_data(const uint8_t *peer_addr, const uint8_t *data
 
 void app_main(void)
 {
+    NODE_Package *pkgs = (NODE_Package *)malloc(sizeof(NODE_Package));
+    createPackage(pkgs, 0x5A, 0x10, 0, 0, 0, 0, 0, 0xB2);
+    pkgs1=pkgs;
     ESP_ERROR_CHECK(init_wifi());
     ESP_ERROR_CHECK(init_esp_now());
     //ESP_ERROR_CHECK(register_peer(peer_mac));
