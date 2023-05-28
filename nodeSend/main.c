@@ -125,8 +125,8 @@ void app_main(void)
         //Convierto El paquete a Cadena
         PackageToString(pkgs, msg_pack);
 
-        //Convertimos cad* -> uint8 *
-        uint8_t message = std::stoi(msg_pack);
+        //Convertimos str* -> uint8 *
+        const uint8_t *message = (const uint8_t *)msg_pack;
 
         //Enviamos message con la funcion sig:
         //esp_now_send_data(peer_mac, message, 20);
@@ -142,7 +142,7 @@ void app_main(void)
     {
         //esp_now_send_data(peer_mac, temperatura, 20);
         //esp_now_send_data(peer_mac, humedad,  20);
-        esp_now_send_data(peer_mac, message, 20);
+        esp_now_send_data(peer_mac, message, strlen(msg_pack));
         showPackage(pkgs);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }

@@ -1,5 +1,7 @@
 #include "packagedata.h"
-#include "crc32.h"
+#include "crc32.c"
+#include <stdio.h>
+#include <string.h>
 // pkg = (NODE_Package *)malloc(N_PACKAGES * sizeof(NODE_Package));
 
 void createPackage(NODE_Package *mi_pack, uint8_t header, uint8_t command, uint8_t length, uint8_t dat0, uint8_t dat1, uint8_t dat2, uint8_t dat3, uint8_t fin)
@@ -22,17 +24,17 @@ void PackageToString(NODE_Package *pack, char *msg_pack)
     char buffer[MSG_TAM_STR];
     int offset = 0;
     // Convertir cada campo a una cadena y almacenarlo en el buffer temporal
-    snprintf(buffer, MSG_TAM_STR, "%02X%02X%02X", pack.header, pack.command, pack.length);
+    snprintf(buffer, MSG_TAM_STR, "%02X%02X%02X", pack->header, pack->command, pack->length);
     strcpy(msg_pack, buffer);
     offset += strlen(buffer);
     for (int i = 0; i < PAYLOAD_LEN; i++)
     {
-        snprintf(buffer, MSG_TAM_STR, "%02X", pack.data[i]);
+        snprintf(buffer, MSG_TAM_STR, "%02X", pack->data[i]);
         // strcat(msg_pack, buffer);
         strcat(msg_pack + offset, buffer);
         offset += strlen(buffer);
     }
-    snprintf(buffer, MSG_TAM_STR, "%02X%08X", pack.end, pack.crc32);
+    snprintf(buffer, MSG_TAM_STR, "%02X%08lX", pack->end, pack->crc32);
     strcat(msg_pack, buffer);
     printf("%s", msg_pack);
 }
@@ -58,23 +60,23 @@ uint32_t getCrc32b(NODE_Package pkg)
     return pkg.crc32;
 }
 
-void showPackage(NODE_Package pkg)
+void showPackage(NODE_Package *pkg)
 {
     //uartClrScr(0);
     //uartGotoxy(0, 0, 0);
-    ESP_LOGI("Header", "0x%01X\n", pkg.header);
-    ESP_LOGI("Command", "0x%01X\n", pkg.command);
-    ESP_LOGI("Length", "0x%01X\n", pkg.length);
-    if (pkg.length > 0)
+    ESP_LOGI("Header", "0x%01X\n", pkg->header);
+    ESP_LOGI("Command", "0x%01X\n", pkg->command);
+    ESP_LOGI("Length", "0x%01X\n", pkg->length);
+    if (pkg->length > 0)
     {
-        ESP_LOGI("data0", "0x%01x\n", pkg.data[0]);
-        ESP_LOGI("data0", "0x%01x\n", pkg.data[1]);
-        ESP_LOGI("data1", "0x%01x\n", pkg.data[2]);
-        ESP_LOGI("data2", "0x%01x\n", pkg.data[3]);
+        ESP_LOGI("data0", "0x%01x\n", pkg->data[0]);
+        ESP_LOGI("data0", "0x%01x\n", pkg->data[1]);
+        ESP_LOGI("data1", "0x%01x\n", pkg->data[2]);
+        ESP_LOGI("data2", "0x%01x\n", pkg->data[3]);
     }else
     {
         ESP_LOGI("dataS", "NULL\n");
     }
-    ESP_LOGI("End", "0x%01X\n", pkg.end);
-    ESP_LOGI("CRC32", "0x%08X\n", pkg.crc32);
+    ESP_LOGI("End", "0x%01X\n", pkg->end);
+    ESP_LOGI("CRC32", "0x%08lX\n", pkg->crc32);
 }
