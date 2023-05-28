@@ -9,8 +9,6 @@
 #include "esp_log.h"
 #include "esp_err.h"
 
-#include "packagedata.h"
-#include "crc32.h"
 
 #include "string.h"
 #include "stdlib.h"
@@ -21,6 +19,9 @@
 #include "esp_netif.h"
 #include "esp_mac.h"
 #include "nvs_flash.h"
+
+#include "packagedata.h"
+#include "crc32.h"
 
 // #include "mpu6050/mpu6050.h"
 
@@ -125,25 +126,36 @@ void app_main(void)
         //Convierto El paquete a Cadena
         PackageToString(pkgs, msg_pack);
 
-        //Convertimos str* -> uint8 *
+        //Convertimos str* -> uint8_t * para poder usar la funcion de esp_now_send_data
         const uint8_t *message = (const uint8_t *)msg_pack;
 
         //Enviamos message con la funcion sig:
-        //esp_now_send_data(peer_mac, message, 20);
+        //esp_now_send_data(peer_mac, message, strlen(msg_pack));
         
         
     /**END Creating package to send**/
     ESP_ERROR_CHECK(init_wifi());
     ESP_ERROR_CHECK(init_esp_now());
     ESP_ERROR_CHECK(register_peer(peer_mac));
-    //uint8_t temperatura[] = "Temperatura: 18 GC";
-    //uint8_t humedad[] = "Humedad = 72 %";
     while (true)
     {
-        //esp_now_send_data(peer_mac, temperatura, 20);
-        //esp_now_send_data(peer_mac, humedad,  20);
+        /*Sugiero que creemos/modifiquemos el paquete cada que cambie la temperatura o cada t cantidad de segundos*/
         esp_now_send_data(peer_mac, message, strlen(msg_pack));
         showPackage(pkgs);
         vTaskDelay(pdMS_TO_TICKS(1000));
+
+        /** Si quiero modificar el valor tendria que... **/
+
+        //Valor de ejemplo para enviar a la estacion
+        uint8_t dato = 12;
+
+        //Creo el paquete con contenido 
+        createPackage(pkgs, 0x5B, 0x10, 1, 0, 0, 0, dato, 0xB2);
+
+        //Convierto El paquete a Cadena
+        PackageToString(pkgs, msg_pack);
+
+        //Convertimos str* -> uint8_t * para poder usar la funcion de esp_now_send_data
+        const uint8_t *message = (const uint8_t *)msg_pack;
     }
 }

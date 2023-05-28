@@ -70,9 +70,9 @@ void showPackage(NODE_Package *pkg)
     if (pkg->length > 0)
     {
         ESP_LOGI("data0", "0x%01x\n", pkg->data[0]);
-        ESP_LOGI("data0", "0x%01x\n", pkg->data[1]);
-        ESP_LOGI("data1", "0x%01x\n", pkg->data[2]);
-        ESP_LOGI("data2", "0x%01x\n", pkg->data[3]);
+        ESP_LOGI("data1", "0x%01x\n", pkg->data[1]);
+        ESP_LOGI("data2", "0x%01x\n", pkg->data[2]);
+        ESP_LOGI("data3", "0x%01x\n", pkg->data[3]);
     }else
     {
         ESP_LOGI("dataS", "NULL\n");

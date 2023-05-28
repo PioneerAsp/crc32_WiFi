@@ -73,11 +73,17 @@ void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int d
     StringToPackage(pkgs1, message);
 
     //Revisamos si llego correctamente
-    if(checkCrc32(pkgs1->crc32, message)==1) ESP_LOGI(TAG, "ESP_NOW_RECIVED_SUCCESS");
+    if(checkCrc32(pkgs1->crc32, message)==1){
+            //Revisamos de quien viene
+        ESP_LOGI(TAG, "ESP_NOW_RECIVED_SUCCESS");
+        if(pkgs1->header==0x5b) ESP_LOGI(TAG, "NODO A");
+        else if(pkgs1->header==0x5a) ESP_LOGI(TAG, "NODO B");
+        else ESP_LOGW(TAG, "NODO FAIL");
+    } 
     else ESP_LOGW(TAG, "ESP_NOW_RECIVED_FAIL");
-    ESP_LOGI(TAG, "Data received" MACSTR " %d", MAC2STR(esp_now_info->src_addr), pkgs1->data[3]);
     
-   ESP_LOGI(TAG, "Data received" MACSTR "%s", MAC2STR(esp_now_info->src_addr), data);
+    ESP_LOGI(TAG, "Data received" MACSTR " %d", MAC2STR(esp_now_info->src_addr), pkgs1->data[3]);
+    ESP_LOGI(TAG, "Data received" MACSTR "%s", MAC2STR(esp_now_info->src_addr), data);
     
     
 }
@@ -122,9 +128,14 @@ static esp_err_t esp_now_send_data(const uint8_t *peer_addr, const uint8_t *data
 
 void app_main(void)
 {
+    //Asignamos a un paquete un lugar en la memoria
     NODE_Package *pkgs = (NODE_Package *)malloc(sizeof(NODE_Package));
     createPackage(pkgs, 0x5A, 0x10, 0, 0, 0, 0, 0, 0xB2);
+    //Le pasamos al apuntador global ese paquete
     pkgs1=pkgs;
+
+    /* si quisieramos tener mas paquetes duplicamos las lineas anteriores*/
+
     ESP_ERROR_CHECK(init_wifi());
     ESP_ERROR_CHECK(init_esp_now());
     //ESP_ERROR_CHECK(register_peer(peer_mac));
