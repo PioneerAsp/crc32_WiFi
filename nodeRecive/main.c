@@ -19,12 +19,18 @@
 #include "esp_mac.h"
 #include "nvs_flash.h"
 
+#include "packagedata.h"
+#include "crc32.h"
+
 // #include "mpu6050/mpu6050.h"
 
 static const char *TAG = "SMARTWATCH: ";
 float self_test[6] = {0, 0, 0, 0, 0, 0};
 float accel_bias[3] = {0, 0, 0};
 float gyro_bias[3] = {0, 0, 0};
+
+//Apuntador global
+    NODE_Package *pkgs1, *pkgs2;
 
 #define PI 3.14159265358979323846f
 #define AVG_BUFF_SIZE 20
@@ -41,11 +47,6 @@ float gyro_bias[3] = {0, 0, 0};
 
 static uint8_t peer_mac[ESP_NOW_ETH_ALEN] = {0x40, 0x22, 0xd8, 0x4f, 0x4b, 0x58}; //  AP (40:91:51:bf:f5:94)
                                                                                   //  STA  (40:22:d8:ee:6d:a5)
-/*
-I (797) wifi:mode : sta (40:22:d8:4f:4b:58) + 
-softAP (40:22:d8:4f:4b:59)
-I (797) wifi:enable tsf
-*/
 static esp_err_t init_wifi(void)
 {
     wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
@@ -65,8 +66,20 @@ static esp_err_t init_wifi(void)
 
 void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len)
 {
+    /*////Convertimos uint8_t * -> str* para poder usar la funcion de StringToPackage
+    char *message = ( char *)data;
+    
+    //En la funcion recv_cb Recivo el string y lo convierto a paquete
+    StringToPackage(pkgs1, message);
 
-    ESP_LOGI(TAG, "Data received" MACSTR "%s", MAC2STR(esp_now_info->src_addr), data);
+    //Revisamos si llego correctamente
+    if(checkCrc32(pkgs1->crc32, message)==1) ESP_LOGI(TAG, "ESP_NOW_RECIVED_SUCCESS");
+    else ESP_LOGW(TAG, "ESP_NOW_RECIVED_FAIL");
+    ESP_LOGI(TAG, "Data received" MACSTR "%d", MAC2STR(esp_now_info->src_addr), pkgs1->data[3]);
+    */
+   ESP_LOGI(TAG, "Data received" MACSTR "%s", MAC2STR(esp_now_info->src_addr), data);
+    
+    
 }
 
 void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
@@ -77,7 +90,7 @@ void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
     }
     else
     {
-        ESP_LOGW(TAG, "ESP_NOW_SEN_FAIL");
+        ESP_LOGW(TAG, "ESP_NOW_SEND_FAIL");
     }
 }
 
@@ -112,8 +125,8 @@ void app_main(void)
     ESP_ERROR_CHECK(init_wifi());
     ESP_ERROR_CHECK(init_esp_now());
     //ESP_ERROR_CHECK(register_peer(peer_mac));
-    uint8_t temperatura[] = "Temperatura: 18 GC";
-    uint8_t humedad[] = "Humedad = 72 %";
+    //uint8_t temperatura[] = "Temperatura: 18 GC";
+    //uint8_t humedad[] = "Humedad = 72 %";
 
    
 }
