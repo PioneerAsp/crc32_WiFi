@@ -9,6 +9,9 @@
 #include "esp_log.h"
 #include "esp_err.h"
 
+#include "packagedata.h"
+#include "crc32.h"
+
 #include "string.h"
 #include "stdlib.h"
 #include <math.h>
@@ -21,7 +24,7 @@
 
 // #include "mpu6050/mpu6050.h"
 
-static const char *TAG = "SMARTWATCH: ";
+static const char *TAG = "NODE A: ";
 float self_test[6] = {0, 0, 0, 0, 0, 0};
 float accel_bias[3] = {0, 0, 0};
 float gyro_bias[3] = {0, 0, 0};
@@ -106,15 +109,41 @@ static esp_err_t esp_now_send_data(const uint8_t *peer_addr, const uint8_t *data
 
 void app_main(void)
 {   
+    /**START Creating package to send**/
+        //Creo el apuntador a un paquete vacio
+        NODE_Package *pkgs = (NODE_Package *)malloc(sizeof(NODE_Package));
+
+        //Valor de ejemplo para enviar a la estacion
+        uint8_t dato = 18;
+        
+        //Cadena auxiliar
+        char msg_pack[MSG_TAM_STR];
+
+        //Creo el paquete con contenido 
+        createPackage(pkgs, 0x5B, 0x10, 1, 0, 0, 0, dato, 0xB2);
+
+        //Convierto El paquete a Cadena
+        PackageToString(pkgs, msg_pack);
+
+        //Convertimos cad* -> uint8 *
+        uint8_t message = std::stoi(msg_pack);
+
+        //Enviamos message con la funcion sig:
+        //esp_now_send_data(peer_mac, message, 20);
+        
+        
+    /**END Creating package to send**/
     ESP_ERROR_CHECK(init_wifi());
     ESP_ERROR_CHECK(init_esp_now());
     ESP_ERROR_CHECK(register_peer(peer_mac));
-    uint8_t temperatura[] = "Temperatura: 18 GC";
-    uint8_t humedad[] = "Humedad = 72 %";
+    //uint8_t temperatura[] = "Temperatura: 18 GC";
+    //uint8_t humedad[] = "Humedad = 72 %";
     while (true)
     {
-        esp_now_send_data(peer_mac, temperatura, 20);
-        esp_now_send_data(peer_mac, humedad,  20);
+        //esp_now_send_data(peer_mac, temperatura, 20);
+        //esp_now_send_data(peer_mac, humedad,  20);
+        esp_now_send_data(peer_mac, message, 20);
+        showPackage(pkgs);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
